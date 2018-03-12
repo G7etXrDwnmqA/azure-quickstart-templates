@@ -7,7 +7,7 @@
       "metadata": {
         "description": "The base URI where artifacts required by this template are located. When the template is deployed using the accompanying scripts, a private location in the subscription will be used and this value will be automatically generated."
       },
-      "defaultValue": "https://raw.githubusercontent.com/Azure/azure-quickstart-templates/master/iis-2vm-sql-1vm/"
+      "defaultValue": "https://raw.githubusercontent.com/G7etXrDwnmqA/azure-quickstart-templates/master/iis-2vm-sql-1vm/"
     },
     "_artifactsLocationSasToken": {
       "type": "securestring",
@@ -134,7 +134,7 @@
     //"lbPoolID": "[concat(variables('webLbId'),'/backendAddressPools/BackendPool1')]",
     //"lbProbeID": "[concat(variables('webLbId'),'/probes/tcpProbe')]",
     "vmExtensionName": "dscExtension",
-    "modulesUrl": "['C:\\tmp\\iis-2vm-sql-1vm\\', 'scripts/WebServerConfig.ps1.zip')]",
+    "modulesUrl": "[concat(parameters('_artifactsLocation'), 'scripts/WebServerConfig.ps1.zip', parameters('_artifactsLocationSasToken'))]",
     "configurationFunction": "WebServerConfig.ps1\\WebServerConfig"
   },
   "resources": [
