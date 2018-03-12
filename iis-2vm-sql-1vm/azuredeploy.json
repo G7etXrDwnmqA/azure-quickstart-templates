@@ -124,18 +124,17 @@
     "webSrvNicName": "[concat(variables('webSrvName'), 'Nic')]",
     "webSrvSubnetRef": "[concat(variables('vnetId'), '/subnets/', 'FESubnetName')]",
     "webSrvPublicIP": "[concat(parameters('envPrefixName'), 'websrvpip')]",
-    "webSrvAvailabilitySetName": "[concat(parameters('envPrefixName'), 'webSrvAS')]",
-    "webSrvNumbOfInstances": "[parameters('numberOfWebSrvs')]",
+    //"webSrvAvailabilitySetName": "[concat(parameters('envPrefixName'), 'webSrvAS')]",
     "webSrvDnsNameforLBIP": "[concat(toLower(variables('webSrvName')), 'lb')]",
-    "webLbName": "[concat(variables('webSrvName'), 'lb')]",
-    "webLblbID": "[resourceId('Microsoft.Network/loadBalancers',variables('webLbName'))]",
-    "webLblb_PIP_Id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('webSrvPublicIP'))]",
-    "webLbId": "[resourceId('Microsoft.Network/loadBalancers',variables('webLbName'))]",
-    "frontEndIPConfigID": "[concat(variables('webLbId'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
-    "lbPoolID": "[concat(variables('webLbId'),'/backendAddressPools/BackendPool1')]",
-    "lbProbeID": "[concat(variables('webLbId'),'/probes/tcpProbe')]",
+    //"webLbName": "[concat(variables('webSrvName'), 'lb')]",
+    //"webLblbID": "[resourceId('Microsoft.Network/loadBalancers',variables('webLbName'))]",
+    //"webLblb_PIP_Id": "[resourceId('Microsoft.Network/publicIPAddresses',variables('webSrvPublicIP'))]",
+    //"webLbId": "[resourceId('Microsoft.Network/loadBalancers',variables('webLbName'))]",
+    //"frontEndIPConfigID": "[concat(variables('webLbId'),'/frontendIPConfigurations/LoadBalancerFrontEnd')]",
+    //"lbPoolID": "[concat(variables('webLbId'),'/backendAddressPools/BackendPool1')]",
+    //"lbProbeID": "[concat(variables('webLbId'),'/probes/tcpProbe')]",
     "vmExtensionName": "dscExtension",
-    "modulesUrl": "[concat(parameters('_artifactsLocation'), 'scripts/WebServerConfig.ps1.zip', parameters('_artifactsLocationSasToken'))]",
+    "modulesUrl": "['C:\\tmp\\iis-2vm-sql-1vm\\', 'scripts/WebServerConfig.ps1.zip')]",
     "configurationFunction": "WebServerConfig.ps1\\WebServerConfig"
   },
   "resources": [
@@ -391,16 +390,6 @@
       }
     },
     {
-      "type": "Microsoft.Compute/availabilitySets",
-      "name": "[variables('webSrvAvailabilitySetName')]",
-      "apiVersion": "2015-06-15",
-      "location": "[resourceGroup().location]",
-      "tags": {
-        "displayName": "WebSrvAvailabilitySet"
-      },
-      "properties": {}
-    },
-    {
       "name": "[variables('webSrvPublicIP')]",
       "type": "Microsoft.Network/publicIPAddresses",
       "location": "[resourceGroup().location]",
@@ -417,104 +406,12 @@
       }
     },
     {
-      "apiVersion": "2015-06-15",
-      "name": "[variables('webLbName')]",
-      "type": "Microsoft.Network/loadBalancers",
-      "location": "[resourceGroup().location]",
-      "tags": {
-        "displayName": "Web LB"
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('webSrvPublicIP'))]"
-      ],
-      "properties": {
-        "frontendIPConfigurations": [
-          {
-            "name": "LoadBalancerFrontEnd",
-            "properties": {
-              "publicIPAddress": {
-                "id": "[variables('webLblb_PIP_Id')]"
-              }
-            }
-          }
-        ],
-        "backendAddressPools": [
-          {
-            "name": "BackendPool1"
-          }
-        ],
-        "inboundNatRules": [
-          {
-            "name": "RDP-VM0",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[variables('frontEndIPConfigID')]"
-              },
-              "protocol": "tcp",
-              "frontendPort": 50001,
-              "backendPort": 3389,
-              "enableFloatingIP": false
-            }
-          },
-          {
-            "name": "RDP-VM1",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[variables('frontEndIPConfigID')]"
-              },
-              "protocol": "tcp",
-              "frontendPort": 50002,
-              "backendPort": 3389,
-              "enableFloatingIP": false
-            }
-          }
-        ],
-        "loadBalancingRules": [
-          {
-            "name": "LBRule",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[variables('frontEndIPConfigID')]"
-              },
-              "backendAddressPool": {
-                "id": "[variables('lbPoolID')]"
-              },
-              "protocol": "tcp",
-              "frontendPort": 80,
-              "backendPort": 80,
-              "enableFloatingIP": false,
-              "idleTimeoutInMinutes": 5,
-              "probe": {
-                "id": "[variables('lbProbeID')]"
-              }
-            }
-          }
-        ],
-        "probes": [
-          {
-            "name": "tcpProbe",
-            "properties": {
-              "protocol": "tcp",
-              "port": 80,
-              "intervalInSeconds": 5,
-              "numberOfProbes": 2
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "[concat(variables('webSrvNicName'), copyindex())]",
+      "name": "[variables('webSrvNicName')]",
       "type": "Microsoft.Network/networkInterfaces",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
-      "copy": {
-        "name": "nicLoop",
-        "count": "[variables('webSrvNumbOfInstances')]"
-      },
       "dependsOn": [
-        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]",
-        "[concat('Microsoft.Network/loadBalancers/', variables('webLbName'))]"
+        "[concat('Microsoft.Network/virtualNetworks/', variables('virtualNetworkName'))]"
       ],
       "tags": {
         "displayName": "WebSrvNic"
@@ -527,48 +424,30 @@
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[variables('webSrvSubnetRef')]"
-              },
-              "loadBalancerBackendAddressPools": [
-                {
-                  "id": "[concat(variables('webLbId'), '/backendAddressPools/BackendPool1')]"
-                }
-              ],
-              "loadBalancerInboundNatRules": [
-                {
-                  "id": "[concat(variables('webLbId'),'/inboundNatRules/RDP-VM', copyindex())]"
-                }
-              ]
+              }
             }
           }
         ]
       }
     },
     {
-      "name": "[concat(variables('webSrvName'), copyindex())]",
+      "name": "[variables('webSrvName')]",
       "type": "Microsoft.Compute/virtualMachines",
       "location": "[resourceGroup().location]",
       "apiVersion": "2015-06-15",
-      "copy": {
-        "name": "webSrvMachineLoop",
-        "count": "[variables('webSrvNumbOfInstances')]"
-      },
       "dependsOn": [
         "[concat('Microsoft.Storage/storageAccounts/', variables('storageName'))]",
-        "[concat('Microsoft.Network/networkInterfaces/', variables('webSrvNicName'), copyindex())]",
-        "[concat('Microsoft.Compute/availabilitySets/', variables('webSrvAvailabilitySetName'))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('webSrvNicName'))]"
       ],
       "tags": {
         "displayName": "WebSrv"
       },
       "properties": {
-        "availabilitySet": {
-          "id": "[resourceId('Microsoft.Compute/availabilitySets',variables('webSrvAvailabilitySetName'))]"
-        },
         "hardwareProfile": {
           "vmSize": "[variables('webSrvVMSize')]"
         },
         "osProfile": {
-          "computerName": "[concat(variables('webSrvName'),copyindex())]",
+          "computerName": "[variables('webSrvName')]",
           "adminUsername": "[parameters('username')]",
           "adminPassword": "[parameters('password')]"
         },
@@ -582,7 +461,7 @@
           "osDisk": {
             "name": "WebSvrOSDisk",
             "vhd": {
-              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('storageName')), variables('apiVersion')).primaryEndpoints.blob, variables('vhdContainer'), '/',variables('webSrvOSDiks'), copyindex(), '.vhd')]"
+              "uri": "[concat(reference(concat('Microsoft.Storage/storageAccounts/', variables('storageName')), variables('apiVersion')).primaryEndpoints.blob, variables('vhdContainer'), '/',variables('webSrvOSDiks'), '.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
@@ -591,7 +470,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('webSrvNicName'), copyindex()))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('webSrvNicName')))]"
             }
           ]
         }
@@ -599,15 +478,11 @@
     },
     {
       "type": "Microsoft.Compute/virtualMachines/extensions",
-      "name": "[concat(variables('webSrvName'), copyindex(),'/', variables('vmExtensionName'))]",
+      "name": "[concat(variables('webSrvName'), '/', variables('vmExtensionName'))]",
       "apiVersion": "2015-06-15",
       "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "webSrvMachineLoop",
-        "count": "[variables('webSrvNumbOfInstances')]"
-      },
       "dependsOn": [
-        "[concat('Microsoft.Compute/virtualMachines/', variables('webSrvName'), copyindex())]"
+        "[concat('Microsoft.Compute/virtualMachines/', variables('webSrvName'))]"
       ],
       "tags": {
         "displayName": "VM Extensions"
