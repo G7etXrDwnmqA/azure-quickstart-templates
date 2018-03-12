@@ -55,6 +55,7 @@
     "webSrvVMSize": {
       "type": "string",
       "allowedValues": [
+        "Standard_A2",
         "Standard_DS1",
         "Standard_DS2",
         "Standard_DS3",
@@ -67,7 +68,7 @@
       "metadata": {
         "description": "The size of the Web Server VMs Created"
       },
-      "defaultValue": "Standard_DS2"
+      "defaultValue": "Standard_A2"
     },
     "numberOfWebSrvs": {
       "type": "int",
